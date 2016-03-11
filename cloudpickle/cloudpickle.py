@@ -123,6 +123,7 @@ class CloudPickler(Pickler):
         dispatch[buffer] = save_buffer
 
     def save_unsupported(self, obj):
+        print(obj, file=sys.stderr)
         raise pickle.PicklingError("Cannot pickle objects of type %s" % type(obj))
     dispatch[types.GeneratorType] = save_unsupported
 
@@ -204,16 +205,12 @@ class CloudPickler(Pickler):
         # So we pickle them here using save_reduce; have to do it differently
         # for different python versions.
         if not hasattr(obj, '__code__'):
-            if PY3:
-                if sys.version_info < (3, 4):
-                    rv = (getattr, (obj.__self__, name))
-                else:
-                    rv = obj.__reduce_ex__(self.proto)
+            if sys.version_info >= (3, 4):
+                rv = obj.__reduce_ex__(self.proto)
+            elif hasattr(obj, '__self__'):
+                rv = (getattr, (obj.__self__, name))
             else:
-                if hasattr(obj, '__self__'):
-                    rv = (getattr, (obj.__self__, name))
-                else:
-                    raise pickle.PicklingError("Can't pickle %r" % obj)
+                raise pickle.PicklingError("Can't pickle %r" % obj)
             return Pickler.save_reduce(self, obj=obj, *rv)
 
         # if func is lambda, def'ed at prompt, is in main, or is nested, then
