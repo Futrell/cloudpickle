@@ -206,7 +206,7 @@ class CloudPickler(Pickler):
         if not hasattr(obj, '__code__'):
             if PY3:
                 if sys.version_info < (3, 4):
-                    raise pickle.PicklingError("Can't pickle %r" % obj)
+                    rv = (getattr, (obj.__self__, name))
                 else:
                     rv = obj.__reduce_ex__(self.proto)
             else:
