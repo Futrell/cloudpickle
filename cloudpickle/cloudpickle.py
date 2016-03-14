@@ -123,7 +123,6 @@ class CloudPickler(Pickler):
         dispatch[buffer] = save_buffer
 
     def save_unsupported(self, obj):
-        print(obj, file=sys.stderr)
         raise pickle.PicklingError("Cannot pickle objects of type %s" % type(obj))
     dispatch[types.GeneratorType] = save_unsupported
 
